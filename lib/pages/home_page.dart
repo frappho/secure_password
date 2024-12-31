@@ -2,9 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-import 'package:password_generator/auth/authenticate.dart';
 import 'package:password_generator/auth/master-password.dart';
-import 'package:password_generator/pages/storage_page.dart';
 import "package:password_generator/widgets/master_password_popup.dart";
 
 class MyHomePage extends StatefulWidget {
@@ -38,14 +36,12 @@ class _MyHomePageState extends State<MyHomePage> {
     _loadMasterPassword();
   }
 
-
-
   Future<void> _loadMasterPassword() async {
     final String? password = await MasterPasswordManager.loadMasterPassword();
     setState(() {
       _masterPassword = password!;
     });
-}
+  }
 
   checkBoxLetters(bool leftValue, bool rightValue, String leftString, String rightString, bool leftValueNum, bool rightValueSym, String leftStringNum, String rightStringSym) {
     return Row(
@@ -243,7 +239,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     setState(() {
       _loadMasterPassword();
     });
@@ -251,15 +246,16 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         actions: [
           IconButton(
-              onPressed: () {
-                setState(() {
-                  showPasswordPopup(context, _masterPassword);
-                });
-              },
-              icon: Icon(
-                Icons.menu,
-                color: Colors.black,
-              ))
+            onPressed: () {
+              setState(() {
+                showPasswordPopup(context, _masterPassword);
+              });
+            },
+            icon: Icon(
+              Icons.menu,
+              color: Colors.black,
+            ),
+          ),
         ],
         centerTitle: true,
         flexibleSpace: Container(
@@ -306,10 +302,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     readOnly: true,
                     controller: passwordController,
                     keyboardType: TextInputType.none,
-                    // onTap: () async {
-                    //   await Clipboard.setData(
-                    //       ClipboardData(text: passwordController.text));
-                    // },
                     enableInteractiveSelection: false,
                     showCursor: false,
                     decoration: InputDecoration(
@@ -326,7 +318,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderSide: BorderSide(color: Colors.greenAccent),
                       ),
                       suffixIcon: IconButton(
-                        //In Zwischenablage kopieren
                         onPressed: () async {
                           await Clipboard.setData(ClipboardData(text: passwordController.text));
                         },
@@ -340,7 +331,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 20,
                 ),
                 ElevatedButton(
-                  //Passwort generieren
                   onPressed: () {
                     if (uppercaseBool == false && lowercaseBool == false && numberBool == false && specialsBool == false) {
                       setState(() {

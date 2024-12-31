@@ -1,16 +1,13 @@
 import "package:flutter/material.dart";
 import "package:password_generator/pages/storage_page.dart";
-import 'package:password_generator/auth/master-password.dart';
 
 void showPasswordPopup(BuildContext context, String masterPassword) {
   final TextEditingController passwordController = TextEditingController();
   final FocusNode focusNode = FocusNode();
 
-  //const String masterPassword = "1708"; // Vordefiniertes Master-Passwort
-
   void _validatePassword(BuildContext context) {
     if (passwordController.text == masterPassword) {
-      Navigator.of(context).pop(); // Schließt das Popup
+      Navigator.of(context).pop();
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -31,7 +28,6 @@ void showPasswordPopup(BuildContext context, String masterPassword) {
         title: const Text("Eingabe Master-Passwort"),
         content: TextField(
           focusNode: focusNode,
-          // Verknüpft den Fokus mit dem TextField
           onSubmitted: (value) {
             _validatePassword(context);
           },
@@ -45,7 +41,7 @@ void showPasswordPopup(BuildContext context, String masterPassword) {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Schließt das Popup
+              Navigator.of(context).pop();
             },
             child: const Text(
               "Abbrechen",
@@ -62,11 +58,11 @@ void showPasswordPopup(BuildContext context, String masterPassword) {
       );
     },
   ).then((_) {
-    focusNode.dispose(); // Freigeben des Fokus, wenn der Dialog geschlossen wird
+    focusNode.dispose();
     passwordController.dispose();
   });
 
-  // Setze den Fokus nach der Anzeige des Dialogs
+
   WidgetsBinding.instance.addPostFrameCallback((_) {
     focusNode.requestFocus();
   });

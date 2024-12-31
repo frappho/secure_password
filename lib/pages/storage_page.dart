@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/services.dart';
-import 'package:password_generator/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:password_generator/auth/master-password.dart';
 
@@ -39,18 +38,6 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
       await file.writeAsBytes(encryptedData);
     }
   }
-
-/*  void testEncryptionDecryption() {
-    final testString = jsonEncode([
-      {"Name": "Test", "user": "test_user", "Passwort": "12345"}
-    ]);
-
-    final encryptedData = encryptData(testString);
-    print("Verschlüsselt: $encryptedData");
-
-    final decryptedData = decryptData(encryptedData);
-    print("Entschlüsselt: $decryptedData");
-  }*/
 
   Future<void> _loadData() async {
     try {
@@ -123,7 +110,6 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
                   controller: nameController,
                   focusNode: nameFocus,
                   textInputAction: TextInputAction.next,
-                  // "Weiter"-Taste
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
                     labelText: 'Name',
@@ -136,14 +122,13 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
                     ),
                   ),
                   onSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(userFocus); // Wechsel zu Benutzername
+                    FocusScope.of(context).requestFocus(userFocus);
                   },
                 ),
                 TextField(
                   controller: userController,
                   focusNode: userFocus,
                   textInputAction: TextInputAction.next,
-                  // "Weiter"-Taste
                   decoration: const InputDecoration(
                     labelText: 'Mail/Nutzername',
                     labelStyle: const TextStyle(color: Colors.blueGrey),
@@ -156,27 +141,25 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
                     ),
                   ),
                   onSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(passwordFocus); // Wechsel zu Passwort
+                    FocusScope.of(context).requestFocus(passwordFocus);
                   },
                 ),
                 TextField(
                   controller: passwordController,
                   focusNode: passwordFocus,
                   textInputAction: TextInputAction.next,
-                  // "OK"-Taste
                   obscureText: false,
                   decoration: const InputDecoration(
                     labelText: 'Passwort',
                     labelStyle: const TextStyle(color: Colors.blueGrey),
                   ),
                   onSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(noteFocus); // Wechsel zu Benutzername
+                    FocusScope.of(context).requestFocus(noteFocus);
                   },
                 ),
                 TextField(
                   controller: noteController,
                   focusNode: noteFocus,
-                  // "Weiter"-Taste
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
                     labelText: 'Notizen',
@@ -229,31 +212,29 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
   }
 
   List<int> encryptData(String plainText) {
-    final key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1'); // 32 Zeichen
+    final key = encrypt.Key.fromUtf8('a1w63d1a3d1ad8ad43wa3daw34da4dg1'); // 32 signs
     final iv = encrypt.IV.fromLength(16); // 16 Byte IV
-    final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc)); // CBC-Modus
+    final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
 
     final encrypted = encrypter.encrypt(plainText, iv: iv);
-
-    // Speichere den IV zusammen mit den verschlüsselten Daten
     return iv.bytes + encrypted.bytes;
   }
 
   String decryptData(List<int> encryptedBytes) {
     try {
-      final key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1'); // 32 Zeichen
+      final key = encrypt.Key.fromUtf8('a1w63d1a3d1ad8ad43wa3daw34da4dg1'); // 32 signs
 
       // Extrahiere den IV (erste 16 Bytes) und die verschlüsselten Daten
       final iv = encrypt.IV(Uint8List.fromList(encryptedBytes.sublist(0, 16)));
       final encryptedData = Uint8List.fromList(encryptedBytes.sublist(16));
 
-      final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc)); // CBC-Modus
+      final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
       final encrypted = encrypt.Encrypted(encryptedData);
 
       return encrypter.decrypt(encrypted, iv: iv);
     } catch (e) {
       print("Fehler beim Entschlüsseln der Daten: $e");
-      return jsonEncode([]); // Rückfall auf leere Daten
+      return jsonEncode([]);
     }
   }
 
@@ -267,7 +248,7 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Popup schließen
+                Navigator.of(context).pop();
               },
               child: const Text(
                 'Abbrechen',
@@ -277,11 +258,11 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  _data.removeAt(index); // Eintrag aus der Liste entfernen
+                  _data.removeAt(index); // Delete list entry
                   _filteredData = List.from(_data);
                 });
-                _saveData(); // Änderungen in der Datei speichern
-                Navigator.of(context).pop(); // Popup schließen
+                _saveData(); // Save changes in data
+                Navigator.of(context).pop();
               },
               child: const Text(
                 'Löschen',
@@ -331,7 +312,6 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
                 controller: passwordController,
                 focusNode: passwordFocus,
                 textInputAction: TextInputAction.done,
-                // "OK"-Taste
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Passwort',
@@ -345,14 +325,13 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
                 controller: passwordConfirmController,
                 focusNode: passwordConfirmFocus,
                 textInputAction: TextInputAction.done,
-                // "OK"-Taste
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Passwort bestätigen',
                   labelStyle: const TextStyle(color: Colors.blueGrey),
                 ),
                 onSubmitted: (_) {
-                  FocusScope.of(context).unfocus(); // Tastatur schließen
+                  FocusScope.of(context).unfocus();
                 },
               ),
             ],
@@ -397,7 +376,7 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _showAddPopup, // Popup zum Hinzufügen öffnen
+            onPressed: _showAddPopup,
           ),
         ],
       ),
@@ -621,7 +600,7 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
                     _filteredData = List.from(_data);
                   });
                 }
-                _saveData(); // Speichere die aktualisierten Daten
+                _saveData();
                 Navigator.of(context).pop();
               },
               child: const Text('Speichern'),
@@ -643,16 +622,16 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
               leading: const Icon(Icons.edit),
               title: const Text('Bearbeiten'),
               onTap: () {
-                Navigator.of(context).pop(); // Schließt das Dropdown
-                _showEditPopup(index); // Öffnet die Bearbeitungsmaske
+                Navigator.of(context).pop();
+                _showEditPopup(index);
               },
             ),
             ListTile(
               leading: const Icon(Icons.delete),
               title: const Text('Löschen'),
               onTap: () {
-                Navigator.of(context).pop(); // Schließt das Dropdown
-                _showDeletePopup(context, index); // Öffnet das Löschen-Popup
+                Navigator.of(context).pop();
+                _showDeletePopup(context, index);
               },
             ),
           ],
@@ -797,51 +776,3 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
     );
   }
 }
-
-/*Future<void> checkFileContents() async {
-  final directory = await getApplicationDocumentsDirectory();
-  final file = File('${directory.path}/data.enc');
-
-  if (await file.exists()) {
-    try {
-      final encryptedBytes = await file.readAsBytes();
-      final decryptedData = decryptData(encryptedBytes);
-
-      final List<dynamic> dataList = jsonDecode(decryptedData);
-      if (dataList.isEmpty) {
-        print("Die Datei ist leer.");
-      } else {
-        print("Die Datei enthält Einträge: $dataList");
-      }
-    } catch (e) {
-      print("Fehler beim Lesen der Datei: $e");
-    }
-  } else {
-    print("Datei existiert nicht.");
-  }
-}
-
-void showFileStatus(BuildContext context) async {
-  final directory = await getApplicationDocumentsDirectory();
-  final file = File('${directory.path}/data.enc');
-
-  if (await file.exists()) {
-    try {
-      final encryptedBytes = await file.readAsBytes();
-      final decryptedData = decryptData(encryptedBytes);
-      final List<dynamic> dataList = jsonDecode(decryptedData);
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(dataList.isEmpty ? "Die Datei ist leer." : "Die Datei enthält Einträge: ${dataList.length}"),
-      ));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Fehler beim Lesen der Datei: $e"),
-      ));
-    }
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Datei existiert nicht."),
-    ));
-  }
-}*/

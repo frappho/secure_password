@@ -10,21 +10,8 @@ import 'package:password_generator/pages/home_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeEncryptedFile();
-  //await checkFileExistence();
   runApp(const MyApp());
 }
-
-/*Future<void> checkFileExistence() async {
-  final directory = await getApplicationDocumentsDirectory();
-  final file = File('${directory.path}/data.enc');
-
-  if (await file.exists()) {
-    print("Datei existiert.");
-  } else {
-    print("Datei existiert nicht.");
-  }
-
-}*/
 
 Future<void> initializeEncryptedFile() async {
   final directory = await getApplicationDocumentsDirectory();
@@ -38,9 +25,8 @@ Future<void> initializeEncryptedFile() async {
   }
 }
 
-
 List<int> encryptData(String plainText) {
-  final key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1'); // 32 Zeichen
+  final key = encrypt.Key.fromUtf8('a1w63d1a3d1ad8ad43wa3daw34da4dg1'); // 32 signs
   final iv = encrypt.IV.fromLength(16);
   final encrypter = encrypt.Encrypter(encrypt.AES(key));
 
@@ -49,7 +35,7 @@ List<int> encryptData(String plainText) {
 }
 
 String decryptData(List<int> encryptedBytes) {
-  final key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1'); // 32 Zeichen
+  final key = encrypt.Key.fromUtf8('a1w63d1a3d1ad8ad43wa3daw34da4dg1'); // 32 signs
   final iv = encrypt.IV.fromLength(16);
   final encrypter = encrypt.Encrypter(encrypt.AES(key));
 
@@ -89,7 +75,7 @@ class MyApp extends StatelessWidget {
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: Colors.greenAccent, // Textfarbe für TextButtons
+            foregroundColor: Colors.greenAccent,
           ),
         ),
         brightness: Brightness.dark,
