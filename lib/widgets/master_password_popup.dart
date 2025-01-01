@@ -1,7 +1,10 @@
 import "package:flutter/material.dart";
 import "package:password_generator/pages/storage_page.dart";
+import "package:password_generator/provider/master_password_provider.dart";
+import "package:provider/provider.dart";
 
-void showPasswordPopup(BuildContext context, String masterPassword) {
+void showPasswordPopup(BuildContext context) {
+  final masterPassword = context.read<MasterPasswordProvider>().masterPassword;
   final TextEditingController passwordController = TextEditingController();
   final FocusNode focusNode = FocusNode();
 
@@ -18,6 +21,7 @@ void showPasswordPopup(BuildContext context, String masterPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Falsches Passwort!")),
       );
+      passwordController.clear();
     }
   }
 

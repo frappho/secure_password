@@ -1,9 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
 import 'package:password_generator/auth/master-password.dart';
+import 'package:password_generator/pages/storage_page.dart';
+import 'package:password_generator/provider/master_password_provider.dart';
 import "package:password_generator/widgets/master_password_popup.dart";
+import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -16,7 +20,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final passwordController = TextEditingController();
-  String _masterPassword = "Lade ...";
 
   @override
   void dispose() {
@@ -33,14 +36,86 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _loadMasterPassword();
+    _loadMasterPassword(context);
   }
 
-  Future<void> _loadMasterPassword() async {
-    final String? password = await MasterPasswordManager.loadMasterPassword();
-    setState(() {
-      _masterPassword = password!;
-    });
+  Future<void> _loadMasterPassword(BuildContext context) async {
+    final String? password = await MasterPasswordManager.loadMasterPassword(context);
+  }
+
+  Future<void> _saveMasterPassword(String masterPassword) async {
+    await MasterPasswordManager.saveMasterPassword(masterPassword);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Neues Master-Passwort gespeichert!"),
+      ),
+    );
+  }
+
+  Future<void> _initializeMasterPassword(BuildContext context) async {
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController passwordConfirmController = TextEditingController();
+    final FocusNode passwordFocus = FocusNode();
+    final FocusNode passwordConfirmFocus = FocusNode();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Neues Master-Passwort'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: passwordController,
+                focusNode: passwordFocus,
+                textInputAction: TextInputAction.done,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Passwort',
+                  labelStyle: const TextStyle(color: Colors.blueGrey),
+                ),
+                onSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(passwordConfirmFocus);
+                },
+              ),
+              TextField(
+                controller: passwordConfirmController,
+                focusNode: passwordConfirmFocus,
+                textInputAction: TextInputAction.done,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Passwort bestätigen',
+                  labelStyle: const TextStyle(color: Colors.blueGrey),
+                ),
+                onSubmitted: (_) {
+                  FocusScope.of(context).unfocus();
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (passwordController.text == passwordConfirmController.text) {
+                  context.read<MasterPasswordProvider>().updateMasterPassword(passwordController.text);
+                  //_saveMasterPassword(passwordController.text);
+                  Navigator.of(context).pop(passwordController.text);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Passwörter nicht identisch!")),
+                  );
+                  passwordController.clear();
+                  passwordConfirmController.clear();
+                  FocusScope.of(context).requestFocus(passwordFocus);
+                }
+              },
+              child: const Text('Hinzufügen'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   checkBoxLetters(bool leftValue, bool rightValue, String leftString, String rightString, bool leftValueNum, bool rightValueSym, String leftStringNum, String rightStringSym) {
@@ -54,7 +129,6 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(leftString),
                 Checkbox(
-                  //Checkbox für Großbuchstaben
                   value: leftValue,
                   onChanged: (value) {
                     setState(
@@ -79,7 +153,6 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(rightString),
                 Checkbox(
-                  //Checkbox für Kleinbuchstaben
                   value: rightValue,
                   onChanged: (value) {
                     setState(
@@ -111,7 +184,6 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(leftStringNum),
                 Checkbox(
-                  //Checkbox für Zahlen
                   value: leftValueNum,
                   onChanged: (value) {
                     setState(
@@ -138,7 +210,6 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(rightStringSym),
                 Checkbox(
-                  //Checkbox für Symbole
                   value: rightValueSym,
                   onChanged: (value) {
                     setState(
@@ -239,17 +310,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-      _loadMasterPassword();
-    });
+    final masterPassword = context.watch<MasterPasswordProvider>().masterPassword;
+
     return Scaffold(
       appBar: AppBar(
         actions: [
           IconButton(
-            onPressed: () {
-              setState(() {
-                showPasswordPopup(context, _masterPassword);
-              });
+            onPressed: () async {
+              if (masterPassword.isEmpty) {
+                _initializeMasterPassword(context);
+              } else {
+                showPasswordPopup(context);
+              };
             },
             icon: Icon(
               Icons.menu,

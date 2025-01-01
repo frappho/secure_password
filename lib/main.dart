@@ -6,11 +6,22 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:password_generator/pages/home_page.dart';
+import 'package:provider/provider.dart';
+import 'package:password_generator/provider/master_password_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeEncryptedFile();
-  runApp(const MyApp());
+
+  final masterPasswordProvider = MasterPasswordProvider();
+  await masterPasswordProvider.loadMasterPassword(); // Master-Passwort laden
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider.value(value: masterPasswordProvider),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 Future<void> initializeEncryptedFile() async {
@@ -61,11 +72,8 @@ class MyApp extends StatelessWidget {
       title: 'Password Generator',
       theme: ThemeData(
         primaryColor: Colors.grey,
-        textSelectionTheme: TextSelectionThemeData(
-          cursorColor: Colors.greenAccent
-        ),
+        textSelectionTheme: TextSelectionThemeData(cursorColor: Colors.greenAccent),
         inputDecorationTheme: InputDecorationTheme(
-
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.greenAccent),
           ),
@@ -89,7 +97,9 @@ class MyApp extends StatelessWidget {
           checkColor: WidgetStatePropertyAll(Colors.black),
         ),
       ),
-      home: const MyHomePage(title: 'Passwort',),
+      home: const MyHomePage(
+        title: 'Passwort',
+      ),
     );
   }
 }

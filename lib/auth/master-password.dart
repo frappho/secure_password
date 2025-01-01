@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 class MasterPasswordManager {
   static const String _keyMasterPassword = 'masterPassword';
@@ -10,12 +12,13 @@ class MasterPasswordManager {
   }
 
   ///Laden des Master-Passwortes
-  static Future<String?> loadMasterPassword() async {
+  static Future<String?> loadMasterPassword(BuildContext context) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? password = prefs.getString(_keyMasterPassword);
 
     if (password == null) {
-      password = "12345";
+      password = "";
+
       await prefs.setString(_keyMasterPassword, password);
     }
     return password;

@@ -4,8 +4,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/services.dart';
+import 'package:password_generator/provider/master_password_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:password_generator/auth/master-password.dart';
+import 'package:provider/provider.dart';
 
 class PasswordStoragePage extends StatefulWidget {
   const PasswordStoragePage({super.key});
@@ -18,13 +20,13 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> _data = [];
   List<Map<String, dynamic>> _filteredData = [];
-  String? _masterPassword;
+  //String? _masterPassword;
 
   @override
   void initState() {
     super.initState();
     _initializeFile().then((_) => _loadData());
-    _loadMasterPassword();
+    //_loadMasterPassword();
   }
 
   Future<void> _initializeFile() async {
@@ -275,98 +277,13 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
     );
   }
 
-  Future<void> _loadMasterPassword() async {
-    final String? savedPassword = await MasterPasswordManager.loadMasterPassword();
+/*  Future<void> _loadMasterPassword() async {
+    final String? savedPassword = await MasterPasswordManager.loadMasterPassword(context);
     setState(() {
       _masterPassword = savedPassword;
     });
-  }
+  }*/
 
-  Future<void> _saveMasterPassword(String masterPassword) async {
-    await MasterPasswordManager.saveMasterPassword(masterPassword);
-    setState(() {
-      _masterPassword = masterPassword;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Neues Master-Passwort gespeichert!"),
-      ),
-    );
-  }
-
-  void _showMasterPasswordPopup() {
-    final TextEditingController passwordController = TextEditingController();
-    final TextEditingController passwordConfirmController = TextEditingController();
-    final FocusNode passwordFocus = FocusNode();
-    final FocusNode passwordConfirmFocus = FocusNode();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Neues Master-Passwort'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: passwordController,
-                focusNode: passwordFocus,
-                textInputAction: TextInputAction.done,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Passwort',
-                  labelStyle: const TextStyle(color: Colors.blueGrey),
-                ),
-                onSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(passwordConfirmFocus);
-                },
-              ),
-              TextField(
-                controller: passwordConfirmController,
-                focusNode: passwordConfirmFocus,
-                textInputAction: TextInputAction.done,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Passwort bestätigen',
-                  labelStyle: const TextStyle(color: Colors.blueGrey),
-                ),
-                onSubmitted: (_) {
-                  FocusScope.of(context).unfocus();
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Abbrechen',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                if (passwordController.text == passwordConfirmController.text) {
-                  _saveMasterPassword(passwordController.text);
-                  Navigator.of(context).pop();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Passwörter nicht identisch!")),
-                  );
-                  passwordController.clear();
-                  passwordConfirmController.clear();
-                  FocusScope.of(context).requestFocus(passwordFocus);
-                }
-              },
-              child: const Text('Hinzufügen'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -492,6 +409,94 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
           ],
         ),
       ),
+    );
+  }
+
+
+  Future<void> _saveMasterPassword(String masterPassword) async {
+    await MasterPasswordManager.saveMasterPassword(masterPassword);
+    /*setState(() {
+      _masterPassword = masterPassword;
+    });*/
+    context.read<MasterPasswordProvider>().updateMasterPassword(masterPassword);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Neues Master-Passwort gespeichert!"),
+      ),
+    );
+  }
+
+  void _showMasterPasswordPopup() {
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController passwordConfirmController = TextEditingController();
+    final FocusNode passwordFocus = FocusNode();
+    final FocusNode passwordConfirmFocus = FocusNode();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Neues Master-Passwort'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: passwordController,
+                focusNode: passwordFocus,
+                textInputAction: TextInputAction.done,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Passwort',
+                  labelStyle: const TextStyle(color: Colors.blueGrey),
+                ),
+                onSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(passwordConfirmFocus);
+                },
+              ),
+              TextField(
+                controller: passwordConfirmController,
+                focusNode: passwordConfirmFocus,
+                textInputAction: TextInputAction.done,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Passwort bestätigen',
+                  labelStyle: const TextStyle(color: Colors.blueGrey),
+                ),
+                onSubmitted: (_) {
+                  FocusScope.of(context).unfocus();
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Abbrechen',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                if (passwordController.text == passwordConfirmController.text) {
+                  _saveMasterPassword(passwordController.text);
+                  Navigator.of(context).pop(passwordController.text);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Passwörter nicht identisch!")),
+                  );
+                  passwordController.clear();
+                  passwordConfirmController.clear();
+                  FocusScope.of(context).requestFocus(passwordFocus);
+                }
+              },
+              child: const Text('Hinzufügen'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -776,3 +781,4 @@ class _PasswordStoragePageState extends State<PasswordStoragePage> {
     );
   }
 }
+
