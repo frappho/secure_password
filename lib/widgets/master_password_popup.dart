@@ -3,40 +3,63 @@ import "package:password_generator/pages/storage_page.dart";
 import "package:password_generator/provider/master_password_provider.dart";
 import "package:provider/provider.dart";
 
-void showPasswordPopup(BuildContext context) {
-  final masterPassword = context.read<MasterPasswordProvider>().masterPassword;
-  final TextEditingController passwordController = TextEditingController();
-  final FocusNode focusNode = FocusNode();
+class MasterPasswordDialog extends StatefulWidget {
+  final String masterPassword;
 
-  void _validatePassword(BuildContext context) {
-    if (passwordController.text == masterPassword) {
-      Navigator.of(context).pop();
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const PasswordStoragePage(),
-        ),
-      );
+  const MasterPasswordDialog({
+    Key? key,
+    required this.masterPassword,
+  }) : super(key: key);
+
+  @override
+  State<MasterPasswordDialog> createState() => _MasterPasswordDialogState();
+}
+
+class _MasterPasswordDialogState extends State<MasterPasswordDialog> {
+  late final TextEditingController _passwordController;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController = TextEditingController();
+    _focusNode = FocusNode();
+
+    // Request focus after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _validatePassword() {
+    if (_passwordController.text == widget.masterPassword) {
+      Navigator.of(context).pop(true); // Return true for successful validation
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Falsches Passwort!")),
       );
-      passwordController.clear();
+      _passwordController.clear();
     }
   }
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async => false, // Prevent back button
+      child: AlertDialog(
         title: const Text("Eingabe Master-Passwort"),
         content: TextField(
-          focusNode: focusNode,
-          onSubmitted: (value) {
-            _validatePassword(context);
-          },
-          controller: passwordController,
+          focusNode: _focusNode,
+          controller: _passwordController,
           obscureText: true,
+          onSubmitted: (_) => _validatePassword(),
           decoration: const InputDecoration(
             labelText: "Master-Passwort",
             labelStyle: TextStyle(color: Colors.grey),
@@ -44,30 +67,37 @@ void showPasswordPopup(BuildContext context) {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+            onPressed: () => Navigator.of(context).pop(false),
             child: const Text(
               "Abbrechen",
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(color: Colors.grey),
             ),
           ),
           TextButton(
-            onPressed: () {
-              _validatePassword(context);
-            },
+            onPressed: _validatePassword,
             child: const Text("OK"),
           ),
         ],
-      );
-    },
-  ).then((_) {
-    focusNode.dispose();
-    passwordController.dispose();
-  });
+      ),
+    );
+  }
+}
 
+void showPasswordPopup(BuildContext context) async {
+  final masterPassword = context.read<MasterPasswordProvider>().masterPassword;
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    focusNode.requestFocus();
-  });
+  final bool? result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => MasterPasswordDialog(masterPassword: masterPassword),
+  );
+
+  if (result == true && context.mounted) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PasswordStoragePage(),
+      ),
+    );
+  }
 }

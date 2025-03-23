@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:password_generator/services/secure_storage_service.dart';
 
 class MasterPasswordManager {
-  static const String _keyMasterPassword = 'masterPassword';
-
   ///Speichern des Master-Passwortes
   static Future<void> saveMasterPassword(String password) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyMasterPassword, password);
+    await SecureStorageService.saveMasterPassword(password);
   }
 
   ///Laden des Master-Passwortes
   static Future<String?> loadMasterPassword(BuildContext context) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? password = prefs.getString(_keyMasterPassword);
+    String? password = await SecureStorageService.getMasterPassword();
 
     if (password == null) {
       password = "";
-
-      await prefs.setString(_keyMasterPassword, password);
+      await SecureStorageService.saveMasterPassword(password);
     }
     return password;
   }
